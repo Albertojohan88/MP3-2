@@ -25,29 +25,28 @@ audio.addEventListener('pause', () => { status.textContent = 'En pausa. Sigue a 
 audio.addEventListener('ended', () => { status.textContent = '¿Otra vez? Pulsa reproducir.'; });
 audio.addEventListener('error', () => { status.textContent = 'El audio no está disponible. Comprueba que el archivo de esta canción esté publicado junto con la página.'; });
 const form = document.getElementById('guest-form');
-const emailOptions = document.getElementById('email-options');
 const formStatus = document.getElementById('form-status');
-const recipient = 'Albertojohan88@gmail.com';
-form.addEventListener('input', () => {
-  emailOptions.hidden = true;
-  formStatus.textContent = '';
-});
+const draftKey = 'johan-music-recommendation-draft';
+try {
+  const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
+  if (saved && typeof saved.name === 'string' && typeof saved.comment === 'string') {
+    form.elements.name.value = saved.name.slice(0, 80);
+    form.elements.comment.value = saved.comment.slice(0, 500);
+  }
+} catch { /* The form remains usable when storage is unavailable. */ }
+form.addEventListener('input', () => { formStatus.textContent = ''; });
 form.addEventListener('submit', event => {
   event.preventDefault();
   const name = form.elements.name.value.trim();
   const comment = form.elements.comment.value.trim();
   if (!name || !comment) {
-    emailOptions.hidden = true;
     formStatus.textContent = 'Escribe tu nombre y una recomendación.';
     return;
   }
-  const subject = 'Johan Music · Recomendación de ' + name;
-  const body = 'Nombre: ' + name + '\r\n\r\nRecomendación:\r\n' + comment;
-  document.getElementById('email-app').href = 'mailto:' + recipient
-    + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  const gmail = new URL('https://mail.google.com/mail/');
-  gmail.search = new URLSearchParams({ view: 'cm', fs: '1', to: recipient, su: subject, body });
-  document.getElementById('email-gmail').href = gmail.href;
-  emailOptions.hidden = false;
-  formStatus.textContent = 'Borrador preparado para ' + recipient + '. Abre una opción de correo, revisa el mensaje y pulsa Enviar allí. Aún no se ha enviado.';
+  try {
+    localStorage.setItem(draftKey, JSON.stringify({ name, comment }));
+    formStatus.textContent = 'Borrador guardado solo en este navegador. No se ha enviado.';
+  } catch {
+    formStatus.textContent = 'No se pudo guardar el borrador. Copia tu texto para conservarlo. No se ha enviado.';
+  }
 });
