@@ -3,6 +3,11 @@ const audio = document.getElementById('reproductor');
 const status = document.getElementById('player-status');
 document.querySelectorAll('button.track').forEach(button => {
   button.addEventListener('click', async () => {
+    document.querySelectorAll('button.track').forEach(track => {
+      const selected = track === button;
+      track.classList.toggle('active', selected);
+      track.setAttribute('aria-pressed', String(selected));
+    });
     document.getElementById('track-title').textContent = button.dataset.title;
     document.getElementById('track-artist').textContent = button.dataset.artist;
     if (audio.getAttribute('src') !== button.dataset.src) {
@@ -18,7 +23,7 @@ audio.addEventListener('playing', () => {
 });
 audio.addEventListener('pause', () => { status.textContent = 'En pausa. Sigue a tu ritmo.'; });
 audio.addEventListener('ended', () => { status.textContent = '¿Otra vez? Pulsa reproducir.'; });
-audio.addEventListener('error', () => { status.textContent = 'El audio no está disponible. Comprueba que Musica/Para.mp3 esté publicado junto con la página.'; });
+audio.addEventListener('error', () => { status.textContent = 'El audio no está disponible. Comprueba que el archivo de esta canción esté publicado junto con la página.'; });
 const form = document.getElementById('guest-form');
 const messages = document.getElementById('messages');
 let entries = [];
