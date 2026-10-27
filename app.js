@@ -25,36 +25,29 @@ audio.addEventListener('pause', () => { status.textContent = 'En pausa. Sigue a 
 audio.addEventListener('ended', () => { status.textContent = '¿Otra vez? Pulsa reproducir.'; });
 audio.addEventListener('error', () => { status.textContent = 'El audio no está disponible. Comprueba que el archivo de esta canción esté publicado junto con la página.'; });
 const form = document.getElementById('guest-form');
-const messages = document.getElementById('messages');
-let entries = [];
-try {
-  const saved = JSON.parse(localStorage.getItem('johan-music-messages') || '[]');
-  if (Array.isArray(saved)) entries = saved.filter(e => e && typeof e.name === 'string' && typeof e.comment === 'string').slice(0, 20);
-} catch { /* Storage may be unavailable in private browsers. */ }
-function renderMessages() {
-  messages.replaceChildren();
-  entries.forEach(entry => {
-    const li = document.createElement('li');
-    const name = document.createElement('strong');
-    const comment = document.createElement('p');
-    name.textContent = entry.name;
-    comment.textContent = entry.comment;
-    li.append(name, comment);
-    messages.append(li);
-  });
-}
-renderMessages();
+const emailOptions = document.getElementById('email-options');
+const formStatus = document.getElementById('form-status');
+const recipient = 'Albertojohan88@gmail.com';
+form.addEventListener('input', () => {
+  emailOptions.hidden = true;
+  formStatus.textContent = '';
+});
 form.addEventListener('submit', event => {
   event.preventDefault();
   const name = form.elements.name.value.trim();
   const comment = form.elements.comment.value.trim();
-  if (!name || !comment) { document.getElementById('form-status').textContent = 'Escribe tu nombre y una recomendación.'; return; }
-  const updated = [{ name, comment }, ...entries].slice(0, 20);
-  try {
-    localStorage.setItem('johan-music-messages', JSON.stringify(updated));
-    entries = updated;
-    renderMessages();
-    form.reset();
-    document.getElementById('form-status').textContent = 'Mensaje guardado en este navegador. ¡Gracias!';
-  } catch { document.getElementById('form-status').textContent = 'Este navegador no permite guardar mensajes. Revisa sus permisos de almacenamiento.'; }
+  if (!name || !comment) {
+    emailOptions.hidden = true;
+    formStatus.textContent = 'Escribe tu nombre y una recomendación.';
+    return;
+  }
+  const subject = 'Johan Music · Recomendación de ' + name;
+  const body = 'Nombre: ' + name + '\r\n\r\nRecomendación:\r\n' + comment;
+  document.getElementById('email-app').href = 'mailto:' + recipient
+    + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  const gmail = new URL('https://mail.google.com/mail/');
+  gmail.search = new URLSearchParams({ view: 'cm', fs: '1', to: recipient, su: subject, body });
+  document.getElementById('email-gmail').href = gmail.href;
+  emailOptions.hidden = false;
+  formStatus.textContent = 'Borrador preparado para ' + recipient + '. Abre una opción de correo, revisa el mensaje y pulsa Enviar allí. Aún no se ha enviado.';
 });
