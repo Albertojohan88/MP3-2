@@ -1,0 +1,57 @@
+name: Buscar canciones y publicar música
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened]
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'Petición musical:')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validar importador
+        run: python3 -m unittest discover -s tests -v
+      - name: Buscar peticiones en YouTube
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python3 scripts/youtube_requests.py
+      - name: Guardar catálogo si cambió
+        run: |
+          if ! git diff --quiet -- videos.json youtube-status.json youtube-misses.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add videos.json youtube-status.json youtube-misses.json
+            git commit -m 'Añadir canciones solicitadas de YouTube'
+            git push origin HEAD:main
+          fi
+      - uses: actions/configure-pages@v5
+      - name: Preparar sitio estático
+        run: |
+          mkdir -p _site
+          cp index.html styles.css app.js videos.json youtube-status.json _site/
+          cp -R Imagenes Musica _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
