@@ -7,3 +7,5 @@ El primer envío requiere que el destinatario confirme el formulario mediante el
 Se conserva la verificación contra spam del proveedor. El formulario lleva al visitante a FormSubmit para completar el envío; no se muestran confirmaciones de entrega locales. El envío funciona también sin JavaScript.
 
 Las pruebas desde el entorno requieren permitir formsubmit.co en la configuración de red. Guardar un borrador de red no aplica automáticamente la configuración a la máquina en ejecución.
+
+El campo oculto `_next` apunta a `https://albertojohan88.github.io/MP3-2/#coleccion` para volver a la colección después del envío. Conservar el prefijo `/MP3-2/`: la raíz del dominio no tiene un sitio y devuelve 404.
