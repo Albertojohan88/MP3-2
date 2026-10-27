@@ -26,27 +26,14 @@ audio.addEventListener('ended', () => { status.textContent = '¿Otra vez? Pulsa 
 audio.addEventListener('error', () => { status.textContent = 'El audio no está disponible. Comprueba que el archivo de esta canción esté publicado junto con la página.'; });
 const form = document.getElementById('guest-form');
 const formStatus = document.getElementById('form-status');
-const draftKey = 'johan-music-recommendation-draft';
-try {
-  const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
-  if (saved && typeof saved.name === 'string' && typeof saved.comment === 'string') {
-    form.elements.name.value = saved.name.slice(0, 80);
-    form.elements.comment.value = saved.comment.slice(0, 500);
-  }
-} catch { /* The form remains usable when storage is unavailable. */ }
 form.addEventListener('input', () => { formStatus.textContent = ''; });
 form.addEventListener('submit', event => {
-  event.preventDefault();
   const name = form.elements.name.value.trim();
   const comment = form.elements.comment.value.trim();
   if (!name || !comment) {
+    event.preventDefault();
     formStatus.textContent = 'Escribe tu nombre y una recomendación.';
     return;
   }
-  try {
-    localStorage.setItem(draftKey, JSON.stringify({ name, comment }));
-    formStatus.textContent = 'Borrador guardado solo en este navegador. No se ha enviado.';
-  } catch {
-    formStatus.textContent = 'No se pudo guardar el borrador. Copia tu texto para conservarlo. No se ha enviado.';
-  }
+  formStatus.textContent = 'Continuarás en FormSubmit para completar el envío. Si se solicita una verificación, sigue sus instrucciones.';
 });
