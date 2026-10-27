@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS tracks (
+  request_key TEXT PRIMARY KEY,
+  provider_id TEXT NOT NULL UNIQUE,
+  data TEXT NOT NULL,
+  created INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rate_limits (
+  bucket INTEGER PRIMARY KEY,
+  count INTEGER NOT NULL
+);
