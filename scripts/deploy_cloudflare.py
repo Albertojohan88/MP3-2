@@ -85,10 +85,12 @@ def main():
     api(prefix + f'/workers/scripts/{NAME}', token, 'PUT', multipart=worker_payload(database_id))
     api(prefix + f'/workers/scripts/{NAME}/subdomain', token, 'POST', {'enabled': True})
     url = f'https://{NAME}.{subdomain}.workers.dev'
-    with urllib.request.urlopen(url + '/api/health', timeout=30) as response:
+    # workers.dev may reject the default Python User-Agent before reaching the Worker.
+    browser_headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'}
+    with urllib.request.urlopen(urllib.request.Request(url + '/api/health', headers=browser_headers), timeout=30) as response:
         if json.load(response).get('service') != 'JohanMusic':
             raise RuntimeError('Deployed service failed health check; frontend configuration was not changed.')
-    with urllib.request.urlopen(url + '/api/tracks', timeout=30) as response:
+    with urllib.request.urlopen(urllib.request.Request(url + '/api/tracks', headers=browser_headers), timeout=30) as response:
         if not isinstance(json.load(response).get('tracks'), list):
             raise RuntimeError('Database readiness check failed; frontend configuration was not changed.')
     (ROOT / 'site-config.json').write_text(json.dumps({'apiBase': url}) + '\n')

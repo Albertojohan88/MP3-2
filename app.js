@@ -93,7 +93,7 @@ async function loadSharedTracks() {
 async function configureRequests() {
   requestButton.disabled = true;
   try {
-    const response = await fetch('site-config.json', { cache: 'no-store' });
+    const response = await fetch('site-config.json?v=' + Date.now(), { cache: 'no-store' });
     if (!response.ok) throw new Error('Missing config');
     const config = await response.json();
     if (!config.apiBase) {
